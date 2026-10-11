@@ -1,5 +1,7 @@
 import {TinyGPT, distribution, randomSource, sample} from './engine.js';
 
+import {customManifest} from './trainer-core.js';
+
 let model = null;
 let meta = null;
 let activeJob = 0;
@@ -16,6 +18,13 @@ self.onmessage = async ({data}) => {
   const {requestId, type} = data;
   try {
     if (type === 'cancel') { activeJob++; return; }
+    if (type === 'load-custom') {
+      ++activeJob;
+      const customMeta = customManifest(data.checkpoint);
+      model = new TinyGPT(data.checkpoint);
+      reply(requestId, 'ready', {meta:customMeta, checkpoint:customMeta.checkpoints[0]});
+      return;
+    }
     if (type === 'load') {
       const job = ++activeJob;
       meta ??= await readJSON('./models/manifest.json');

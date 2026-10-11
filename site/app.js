@@ -3,6 +3,7 @@ const els = Object.fromEntries(['prompt','temperature','temperature-value','top-
 const checkpointButtons = [...document.querySelectorAll('[data-checkpoint]')];
 const controls = [els.prompt, els.temperature, els['top-k'], els.seed, els['generation-length'], els['generate-button'], els['step-button'], els['inspect-button'], els.layer, els.head, els['disable-head'], ...checkpointButtons];
 const state = {worker:null, request:0, loadRequest:0, inspectRequest:0, generateRequest:0, checkpoint:'trained', manifest:null, selectedCheckpoint:null, ready:false, generating:false, stepping:false, generationCount:80, stepPrompt:'', inspection:null, selectedToken:-1, inputChanged:true, timer:null, canvasGeometry:null};
+let customCheckpoint = null;
 const source = 'https://github.com/elliottbarnes/ellmiott/blob/main/';
 const lessonPaths = ['docs/lessons/01-tokenization.md','docs/lessons/02-embeddings.md','docs/lessons/03-attention.md','docs/lessons/04-transformer-block.md','docs/lessons/05-training.md','docs/lessons/06-sampling-and-ablation.md'];
 document.querySelectorAll('[data-lesson]').forEach(link => { link.href = source + lessonPaths[Number(link.dataset.lesson)-1]; });
@@ -21,7 +22,7 @@ function syncControls() {
   els['stop-button'].hidden = !state.generating;
   els['generate-button'].hidden = state.generating;
   document.querySelectorAll('[data-experiment]').forEach(button => { button.disabled = !state.ready || state.generating; });
-  checkpointButtons.forEach(button => button.setAttribute('aria-pressed', String(button.dataset.checkpoint === state.checkpoint)));
+  checkpointButtons.forEach(button => { button.setAttribute('aria-pressed', String(button.dataset.checkpoint === state.checkpoint)); if(button.dataset.checkpoint === 'custom') button.disabled = disabled || !customCheckpoint; });
 }
 
 function showError(message) {
@@ -72,6 +73,7 @@ function clearInspection() {
 }
 
 function loadCheckpoint(id) {
+  if(id === 'custom' && !customCheckpoint) return;
   clearTimeout(state.timer);
   state.checkpoint = id;
   state.ready = false;
@@ -87,7 +89,7 @@ function loadCheckpoint(id) {
   clearContinuation('One character at a time. See where it goes.');
   if (state.manifest) renderTrainingChart(state.manifest.history,state.manifest.checkpoints);
   syncControls();
-  state.loadRequest = post('load', {id});
+  state.loadRequest = id === 'custom' ? post('load-custom', {checkpoint:customCheckpoint}) : post('load', {id});
 }
 
 function inspect({immediate = false, resetToken = false} = {}) {
@@ -122,6 +124,7 @@ function handleMessage({data}) {
     populateSelect(els.layer, data.meta.config.n_layer);
     populateSelect(els.head, data.meta.config.n_head);
     [...els['top-k'].options].forEach(option => { option.disabled = Number(option.value) > data.meta.config.vocab_size; });
+    if(Number(els['top-k'].value)>data.meta.config.vocab_size) els['top-k'].value='0';
     renderManifest(data.meta);
     syncControls();
     inspect({immediate:true,resetToken:true});
@@ -263,12 +266,13 @@ function drawAttention() {
 function renderManifest(meta) {
   els['parameter-count'].textContent = number(meta.parameter_count);
   const config = meta.config;
-  els['architecture-summary'].textContent = `${config.n_layer} layers · ${config.n_head} heads · ${config.n_embd} embedding dimensions`;
+  els['architecture-summary'].textContent = `${config.n_layer} ${config.n_layer === 1 ? 'layer' : 'layers'} · ${config.n_head} heads · ${config.n_embd} embedding dimensions`;
   els['training-steps'].textContent = number(meta.training.steps);
   els['training-device'].textContent = `${String(meta.training.device).toUpperCase()} · seed ${meta.training.seed}${Number.isFinite(meta.training.seconds) ? ` · ${(meta.training.seconds/60).toFixed(1)} minutes` : ''}`;
   els['corpus-link'].textContent = meta.corpus.title;
   if (typeof meta.corpus.url === 'string' && /^https:\/\//.test(meta.corpus.url)) els['corpus-link'].href = meta.corpus.url;
-  els['corpus-size'].textContent = `${number(meta.corpus.train_characters)} training / ${number(meta.corpus.validation_characters)} held-out characters`;
+  else els['corpus-link'].href = '#train-your-own';
+  els['corpus-size'].textContent = Number.isFinite(meta.corpus.train_characters) ? `${number(meta.corpus.train_characters)} training / ${number(meta.corpus.validation_characters)} held-out characters` : 'Corpus counts were not included in this checkpoint';
   renderTrainingChart(meta.history,meta.checkpoints);
 }
 
@@ -311,7 +315,7 @@ function generate(step = false) {
   if (!els.seed.reportValidity()) return;
   clearTimeout(state.timer);
   inspect({immediate:true});
-  state.generating=true; state.stepping=step; state.stepPrompt=els.prompt.value || '\n';
+  state.generating=true; state.stepping=step; state.stepPrompt=els.prompt.value || (state.manifest?.vocab?.includes('\n') ? '\n' : state.manifest?.vocab?.[0] || '\n');
   state.generationCount=step?1:Number(els['generation-length'].value);
   els['error-banner'].hidden=true;
   els['generated-text'].textContent=''; els['generated-text'].className='generated-text streaming';
@@ -371,6 +375,12 @@ els['attention-canvas'].addEventListener('keydown',event=>{
     state.selectedToken=event.key==='Home'?0:event.key==='End'?max:Math.max(0,Math.min(max,state.selectedToken+(['ArrowUp','ArrowLeft'].includes(event.key)?-1:1)));
     renderSelectedToken();
   }
+});
+window.addEventListener('ellmiott:custom-model',event=>{
+  customCheckpoint=event.detail.checkpoint;
+  els.prompt.value=customCheckpoint.vocab.slice(0,8).join('');
+  els['disable-head'].checked=false; els['top-k'].value='0';
+  loadCheckpoint('custom');
 });
 let resizeTimer;
 window.addEventListener('resize',()=>{clearTimeout(resizeTimer);resizeTimer=setTimeout(drawAttention,80);});

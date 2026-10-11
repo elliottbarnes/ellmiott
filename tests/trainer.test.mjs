@@ -1,0 +1,31 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import vm from 'node:vm';
+import {createRequire} from 'node:module';
+import {prepareCorpus,createTrainer,customManifest} from '../site/trainer-core.js';
+import {TinyGPT,randomSource} from '../site/engine.js';
+const module={exports:{}};
+vm.runInThisContext('(function(exports,require,module){'+readFileSync(new URL('../site/vendor/tf.min.js',import.meta.url),'utf8')+'\n})')(module.exports,createRequire(import.meta.url),module);
+const tf=module.exports;
+await tf.setBackend('cpu');await tf.ready();
+test('custom corpus rejects invalid data and splits Unicode by code point',()=>{
+  for(const text of ['short','a'.repeat(500),'ab\0'.repeat(200),'ab'.repeat(100001)])assert.throws(()=>prepareCorpus(text));
+  const c=prepareCorpus('😀é'.repeat(250));assert.equal(c.characters,500);assert.equal(c.train.length,450);assert.equal(c.validation.length,50);assert.equal(c.vocab.length,2);
+});
+test('real browser gradients reduce loss; exported logits agree with independent inference',()=>{
+  const before=tf.memory().numTensors;
+  const corpus=prepareCorpus('abc abc abc\n'.repeat(100)),trainer=createTrainer(tf,corpus,42),random=randomSource(43);
+  const first=trainer.evaluate();
+  for(let i=0;i<30;i++)trainer.step(random);
+  const last=trainer.evaluate();assert.ok(last.validation_loss<first.validation_loss*.7,JSON.stringify({first,last}));
+  const cp=trainer.export(30),model=new TinyGPT(cp),ids=[0,1,2,3];
+  const expected=trainer.logits(ids).slice(-corpus.vocab.length),actual=model.forward(ids).logits;
+  actual.forEach((value,i)=>assert.ok(Math.abs(value-expected[i])<2e-4,`${i}: ${value} / ${expected[i]}`));
+  assert.equal(customManifest(cp).checkpoints[0].step,30);
+  const noNewline={...cp,vocab:cp.vocab.map((_,i)=>String.fromCodePoint(945+i))};
+  assert.deepEqual(new TinyGPT(noNewline).tokenize('').ids,[0]);
+  assert.equal(new TinyGPT(noNewline).tokenize('').unknown,0);
+  assert.ok(!JSON.stringify(cp).includes('abc abc'));
+  trainer.dispose();assert.equal(tf.memory().numTensors,before);
+});

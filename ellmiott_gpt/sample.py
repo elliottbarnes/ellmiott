@@ -14,7 +14,7 @@ from .export import load_export
 def sample(model, tokenizer, prompt, count=200, temperature=0.8, top_k=0, seed=42, disabled_head=None):
     if count < 0 or not math.isfinite(temperature) or temperature < 0 or top_k < 0:
         raise ValueError("Count/top-k and finite temperature must be nonnegative")
-    context = tokenizer.encode(prompt or "\n")
+    context = tokenizer.encode(prompt or ("\n" if "\n" in tokenizer.vocab else tokenizer.vocab[0]))
     generator = torch.Generator().manual_seed(seed)
     generated = []
     for _ in range(count):
@@ -44,7 +44,7 @@ def sample(model, tokenizer, prompt, count=200, temperature=0.8, top_k=0, seed=4
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--checkpoint", type=Path, default=Path("site/models/trained.json"))
-    parser.add_argument("--prompt", default="ROMEO:\n")
+    parser.add_argument("--prompt", default="")
     parser.add_argument("--count", type=int, default=200)
     parser.add_argument("--temperature", type=float, default=0.8)
     parser.add_argument("--top-k", type=int, default=0)

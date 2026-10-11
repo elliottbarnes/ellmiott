@@ -50,7 +50,7 @@ async function harness(t) {
   for (const [id, value] of Object.entries({temperature:'0.8', 'top-k':'0', seed:'42', 'generation-length':'80', layer:'0', head:'0'})) nodes[id].value = value;
   for (const id of ['layer','head']) nodes[id].append(new NodeDouble('option'));
   for (const value of ['0','5','10','20']) { const option = new NodeDouble('option'); option.value = value; nodes['top-k'].append(option); }
-  const checkpoints = ['initial','early','trained'].map(id => { const node = new NodeDouble('button'); node.dataset.checkpoint = id; return node; });
+  const checkpoints = ['initial','early','trained','custom'].map(id => { const node = new NodeDouble('button'); node.dataset.checkpoint = id; return node; });
   const lessons = Array.from({length:6}, (_,i) => { const node = new NodeDouble('a'); node.dataset.lesson = String(i+1); return node; });
   const experiments = ['tokens','embeddings','context','ablation','learning','temperature'].map(id => { const node = new NodeDouble('button'); node.dataset.experiment = id; return node; });
   globalThis.document = {
@@ -59,7 +59,8 @@ async function harness(t) {
     createElementNS: (_,tag) => new NodeDouble(tag),
     querySelectorAll: selector => ({'[data-checkpoint]':checkpoints,'[data-lesson]':lessons,'[data-experiment]':experiments}[selector] || []),
   };
-  globalThis.window = {devicePixelRatio:1, addEventListener() {}, matchMedia:() => ({matches:true})};
+  const windowEvents = new Map();
+  globalThis.window = {devicePixelRatio:1, addEventListener(type,listener) {windowEvents.set(type,listener);}, matchMedia:() => ({matches:true})};
   let worker;
   globalThis.Worker = class {
     constructor() { this.messages = []; this.listeners = {}; worker = this; }
@@ -80,7 +81,7 @@ async function harness(t) {
       if (value === undefined) delete globalThis[key]; else globalThis[key] = value;
     }
   });
-  return {nodes, checkpoints, experiments, worker, latest, inspection};
+  return {nodes, checkpoints, experiments, worker, latest, inspection, windowEvents};
 }
 
 test('stepping from an empty prompt retains the implicit newline context', async t => {
@@ -132,4 +133,23 @@ test('editing prompt, sampling, or head settings clears the previous continuatio
   completeGeneration();
   experiments[1].fire('click');
   assert.match(nodes['generated-text'].textContent, /Inputs changed/);
+});
+
+
+test('custom checkpoint survives stage changes and uses its own empty-prompt character', async t => {
+  const {nodes, checkpoints, worker, latest, windowEvents}=await harness(t);
+  assert.equal(checkpoints[3].disabled,true);
+  const checkpoint={vocab:['α','β'],step:10};
+  windowEvents.get('ellmiott:custom-model')({detail:{checkpoint}});
+  assert.equal(latest('load-custom').checkpoint,checkpoint);
+  const meta={...manifest,vocab:checkpoint.vocab,config:{...manifest.config,n_layer:1,vocab_size:2},history:[],checkpoints:[{id:'custom',step:10}],corpus:{title:'Your custom text',url:''}};
+  worker.respond({type:'ready',requestId:latest('load-custom').requestId,meta,checkpoint:meta.checkpoints[0]});
+  assert.equal(nodes['corpus-link'].href,'#train-your-own');
+  assert.equal(checkpoints[3].disabled,false);
+  nodes.prompt.value='';nodes['step-button'].fire('click');
+  worker.respond({type:'done',requestId:latest('generate').requestId,text:'β'});
+  assert.equal(nodes.prompt.value,'αβ');
+  checkpoints[0].fire('click');
+  worker.respond({type:'ready',requestId:latest('load').requestId,meta:manifest,checkpoint:manifest.checkpoints[0]});
+  checkpoints[3].fire('click');assert.equal(latest('load-custom').checkpoint,checkpoint);
 });

@@ -30,7 +30,13 @@ class CharacterTokenizer:
 def load_corpus(path=Path("data/tinyshakespeare.txt")):
     content = Path(path).read_bytes()
     text = content.decode("utf-8")
+    if len(text) < 650:
+        raise ValueError("Use at least 650 characters so both splits exceed the 64-character context")
+    if "\0" in text:
+        raise ValueError("Choose plain UTF-8 text, not a binary file")
     tokenizer = CharacterTokenizer.from_text(text)
+    if not 2 <= len(tokenizer.vocab) <= 256:
+        raise ValueError("Browser-compatible training requires 2 to 256 distinct characters")
     encoded = torch.tensor(tokenizer.encode(text), dtype=torch.long)
     split = int(0.9 * len(encoded))
     metadata = {
@@ -41,6 +47,10 @@ def load_corpus(path=Path("data/tinyshakespeare.txt")):
         "split": "First 90% training; final 10% held out, by character position",
         "license_note": "Underlying Shakespeare text is public domain. Tiny Shakespeare compilation attributed to Andrej Karpathy; no separate data license is asserted.",
     }
+    bundled = Path(__file__).resolve().parents[1] / "data" / "tinyshakespeare.txt"
+    if sha256(content).hexdigest() != sha256(bundled.read_bytes()).hexdigest():
+        metadata.update(title="Custom training text", author="User supplied", compiled_by="User supplied",
+                        url="", license_note="User-supplied text; no rights or license are inferred.")
     return encoded[:split], encoded[split:], tokenizer, metadata
 
 

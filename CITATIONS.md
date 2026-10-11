@@ -19,3 +19,7 @@ The original source in this repository implements the explicit forward pass, exp
 The bundled `data/tinyshakespeare.txt` preserves the bytes of [Tiny Shakespeare in Karpathy's char-rnn repository](https://github.com/karpathy/char-rnn/blob/master/data/tinyshakespeare/input.txt). The underlying text is by William Shakespeare; the compilation is attributed to Andrej Karpathy. The original plays are public-domain works. No separate MIT license is asserted for this compilation, and the repository's own MIT license does not relicense the corpus.
 
 See [data/README.md](data/README.md) for the source URL and digest, and [MODEL_CARD.md](MODEL_CARD.md) for how the text was split and evaluated. Generated text may reproduce fragments of the training material.
+
+## Browser training dependency
+
+[TensorFlow.js](https://github.com/tensorflow/tfjs), version 4.22.0, provides automatic differentiation and CPU operations for custom-data training. The unmodified official `@tensorflow/tfjs` npm `dist/tf.min.js` bundle is vendored in `site/vendor/` under Apache-2.0; its license header and upstream README are preserved. The package's published SHA-512 integrity was verified before extraction. Package tarball SHA-256: `56505c191e24116787477b3bb5bb1cc0cf1c2bdce8112b9c402a8a2d31cf2f00`. Inference remains the independent Ellmiott implementation.

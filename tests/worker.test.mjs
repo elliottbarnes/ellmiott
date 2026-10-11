@@ -68,3 +68,22 @@ test('cancel interrupts a long continuation and leaves the worker usable', async
     assert.ok(!received.some(m=>m.requestId===2 && m.type==='done'));
   } finally {await worker.terminate();}
 });
+
+test('custom import switches inference and preserves the published checkpoint cache', async()=>{
+  const {readFile}=await import('node:fs/promises');
+  const cp=JSON.parse(await readFile(new URL('../site/models/initial.json',import.meta.url),'utf8'));
+  cp.vocab=cp.vocab.map((_,i)=>String.fromCodePoint(0x3b1+i));
+  const worker=startWorker();
+  try{
+    await waitFor(worker,m=>m.type==='booted');
+    await request(worker,{requestId:1,type:'load',id:'trained'},'ready');
+    const custom=await request(worker,{requestId:2,type:'load-custom',checkpoint:cp},'ready');
+    assert.equal(custom.meta.corpus.title,'Your custom text');assert.equal(custom.meta.corpus.url,'');assert.equal(custom.meta.history.length,0);
+    const result=await request(worker,{requestId:3,type:'generate',text:cp.vocab[0],count:8},'done');
+    assert.equal(Array.from(result.text).length,8);assert.ok(Array.from(result.text).every(c=>cp.vocab.includes(c)));
+    const published=await request(worker,{requestId:4,type:'load',id:'trained'},'ready');
+    assert.equal(published.meta.corpus.title,'Tiny Shakespeare');
+    cp.tensors['lm_head.weight'].data[0]=null;
+    const bad=await request(worker,{requestId:5,type:'load-custom',checkpoint:cp},'ready');assert.equal(bad.type,'error');
+  }finally{await worker.terminate();}
+});

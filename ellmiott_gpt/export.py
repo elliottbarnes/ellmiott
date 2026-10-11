@@ -56,9 +56,13 @@ def parity_cases(path, checkpoint):
     vocab = payload["vocab"]
     cases = []
     for prompt, disabled in [("To be, or not to be", None), ("ROMEO:\n", (0, 1))]:
+        if not all(c in vocab for c in prompt):
+            prompt = "".join(vocab[:min(16, model.config.block_size)])
+        prompt = prompt[:model.config.block_size]
+        disabled = (0, min(1, model.config.n_head - 1)) if disabled else None
         ids = [vocab.index(c) for c in prompt]
         logits, attention = model(torch.tensor([ids]), disabled_head=disabled, return_attention=True)
-        layer, head = (0, 1) if disabled else (1, 2)
+        layer, head = (0, min(1, model.config.n_head - 1)) if disabled else (min(1, model.config.n_layer - 1), min(2, model.config.n_head - 1))
         cases.append({
             "checkpoint": checkpoint, "prompt": prompt, "ids": ids,
             "logits": rounded(logits[0, -1].tolist()),

@@ -81,3 +81,9 @@ See [architecture](docs/architecture.md) for the tensor layout and runtime agree
 Original project code, documentation, and generated checkpoints are provided under the [MIT license](LICENSE). The bundled Shakespeare text is separate third-party source material: the underlying works are public domain, and the Tiny Shakespeare compilation is attributed to Andrej Karpathy. See [data provenance](data/README.md) and [citations](CITATIONS.md); the project license does not relicense third-party material.
 
 The transformer architecture and GPT training objective build on established research. minGPT and nanoGPT are credited educational references. Ellmiott's teaching interface, runnable experiments, explicit model implementation, and browser runtime form this project's implementation.
+
+## Train on your own text
+
+The live lab now includes **[Train your own](https://elliottbarnes.github.io/ellmiott/#train-your-own)**: paste or choose UTF-8 text, watch real CPU training loss, stop and keep weights, then inspect your model in the same playground. Download and reopen custom checkpoints, or import weights from a longer local Python run. Text stays on your device; weights are not saved automatically.
+
+See the [custom-data guide](docs/custom-data.md) for limits, architecture, privacy, and Python commands. Browser training starts a smaller model from scratch; it is an experiment in learning text patterns, not document Q&A.

@@ -53,7 +53,10 @@ def main():
     torch.set_num_threads(args.threads)
     torch.manual_seed(args.seed)
     torch.use_deterministic_algorithms(True)
-    train, validation, tokenizer, corpus = load_corpus(args.data)
+    try:
+        train, validation, tokenizer, corpus = load_corpus(args.data)
+    except (ValueError, UnicodeError, OSError) as exc:
+        parser.error(str(exc))
     config = GPTConfig(vocab_size=len(tokenizer.vocab))
     model = GPT(config)
     optimizer = torch.optim.AdamW(model.parameters(), lr=args.learning_rate, betas=(0.9, 0.99), weight_decay=0.1)

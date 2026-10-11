@@ -95,7 +95,7 @@ export class TinyGPT {
   }
 
   tokenize(text) {
-    const chars = Array.from(String(text || '\n'));
+    const chars = Array.from(String(text || (this.charIds.has('\n') ? '\n' : this.vocab[0])));
     const fallback = this.charIds.get('?') ?? this.charIds.get(' ') ?? 0;
     const truncated = Math.max(0, chars.length - this.config.block_size);
     let unknown = 0;

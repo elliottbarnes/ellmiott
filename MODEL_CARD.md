@@ -94,3 +94,7 @@ The test suites check model behavior and Python/JavaScript numerical agreement f
 - This version has no instruction fine-tuning, preference optimization, moderation model, multilingual evaluation, or formal memorization audit.
 
 The project is designed for inspection and experimentation. [Reproduce the run](docs/training.md), keep any changed configuration explicit, and update this card when publishing new weights. Original code, documentation, and generated weights are offered under the [MIT license](LICENSE); third-party corpus attribution is separate.
+
+## User-trained models
+
+The [custom-data feature](docs/custom-data.md) trains separate, smaller models in the browser or imports locally trained Python checkpoints. The published Shakespeare measurements above do not describe user-trained models. Browser runs use one layer, four heads, 32 embedding dimensions, a 32-character context, batch size 4, and Adam at 0.003. Their parameter count depends on vocabulary size. The UI reports their own measured losses. Custom models learn character patterns and may memorize their input; exports should be treated as private when trained on private text.
