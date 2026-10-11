@@ -38,7 +38,7 @@ The experiment prints the vocabulary, a round trip, shifted pairs, the next-char
 
 ## Try it in the lab
 
-Open [Ellmiott GPT](https://elliottbarnes.github.io/ellmiott-gpt/), type a short prompt, and inspect its tokens. Add a space, newline, then an emoji. Which changes add a token? Which trigger the unsupported-character notice? Try a prompt longer than the context window and inspect which suffix is retained. The model can use only that visible suffix.
+Open [Ellmiott](https://elliottbarnes.github.io/ellmiott/), type a short prompt, and inspect its tokens. Add a space, newline, then an emoji. Which changes add a token? Which trigger the unsupported-character notice? Try a prompt longer than the context window and inspect which suffix is retained. The model can use only that visible suffix.
 
 ## Exercises
 

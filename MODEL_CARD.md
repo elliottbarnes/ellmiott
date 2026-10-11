@@ -1,8 +1,8 @@
-# Ellmiott GPT · model card
+# Ellmiott · model card
 
 ## Purpose
 
-Ellmiott GPT is an inspectable character-level language model for learning how a small decoder-only transformer works. Its intended uses are local experiments, teaching, numerical inspection, and reproducing a modest training run. It predicts text continuations in the style of its narrow corpus. It has no instruction tuning, conversation training, retrieval, external tools, or claim to factual reliability.
+Ellmiott is an inspectable character-level language model for learning how a small decoder-only transformer works. Its intended uses are local experiments, teaching, numerical inspection, and reproducing a modest training run. It predicts text continuations in the style of its narrow corpus. It has no instruction tuning, conversation training, retrieval, external tools, or claim to factual reliability.
 
 The browser and Python sampler both load the committed JSON weights. Checkpoints are real snapshots from random initialization and training. The browser does not substitute scripted responses or call a hosted language-model service.
 

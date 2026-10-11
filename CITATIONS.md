@@ -1,11 +1,11 @@
 # Sources and attribution
 
-Ellmiott GPT is an educational implementation of established transformer ideas. These sources credit the architecture, training objective, and reference projects; they are not claims of affiliation or endorsement.
+Ellmiott is an educational implementation of established transformer ideas. These sources credit the architecture, training objective, and reference projects; they are not claims of affiliation or endorsement.
 
 ## Research
 
 - Ashish Vaswani et al. (2017), [Attention Is All You Need](https://arxiv.org/abs/1706.03762). The source of the transformer architecture and scaled dot-product, multi-head attention. This project uses causal decoder attention rather than reproducing the paper's full translation system.
-- Alec Radford, Karthik Narasimhan, Tim Salimans, and Ilya Sutskever (2018), [Improving Language Understanding by Generative Pre-Training](https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf). A primary reference for GPT's decoder-based language-model pretraining. Ellmiott GPT trains a much smaller character-level model and does not reproduce that paper's downstream fine-tuning or benchmark results.
+- Alec Radford, Karthik Narasimhan, Tim Salimans, and Ilya Sutskever (2018), [Improving Language Understanding by Generative Pre-Training](https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf). A primary reference for GPT's decoder-based language-model pretraining. Ellmiott trains a much smaller character-level model and does not reproduce that paper's downstream fine-tuning or benchmark results.
 
 ## Educational implementations
 

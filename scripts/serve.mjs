@@ -14,4 +14,4 @@ const server = createServer(async (req,res) => {
     res.end(await readFile(filename));
   } catch { res.writeHead(404); res.end('Not found'); }
 });
-server.listen(port, '127.0.0.1', () => console.log(`Ellmiott GPT: http://127.0.0.1:${port}`));
+server.listen(port, '127.0.0.1', () => console.log(`Ellmiott: http://127.0.0.1:${port}`));

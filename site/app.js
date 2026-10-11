@@ -3,7 +3,7 @@ const els = Object.fromEntries(['prompt','temperature','temperature-value','top-
 const checkpointButtons = [...document.querySelectorAll('[data-checkpoint]')];
 const controls = [els.prompt, els.temperature, els['top-k'], els.seed, els['generation-length'], els['generate-button'], els['step-button'], els['inspect-button'], els.layer, els.head, els['disable-head'], ...checkpointButtons];
 const state = {worker:null, request:0, loadRequest:0, inspectRequest:0, generateRequest:0, checkpoint:'trained', manifest:null, selectedCheckpoint:null, ready:false, generating:false, stepping:false, generationCount:80, stepPrompt:'', inspection:null, selectedToken:-1, inputChanged:true, timer:null, canvasGeometry:null};
-const source = 'https://github.com/elliottbarnes/ellmiott-gpt/blob/main/';
+const source = 'https://github.com/elliottbarnes/ellmiott/blob/main/';
 const lessonPaths = ['docs/lessons/01-tokenization.md','docs/lessons/02-embeddings.md','docs/lessons/03-attention.md','docs/lessons/04-transformer-block.md','docs/lessons/05-training.md','docs/lessons/06-sampling-and-ablation.md'];
 document.querySelectorAll('[data-lesson]').forEach(link => { link.href = source + lessonPaths[Number(link.dataset.lesson)-1]; });
 els.prompt.value = 'ROMEO:\n';

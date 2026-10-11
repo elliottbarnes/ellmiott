@@ -1,10 +1,10 @@
-# Ellmiott GPT
+# Ellmiott
 
 **Build a language model. See every prediction.**
 
 A small GPT built for learning: readable PyTorch training code, a separate JavaScript inference engine, and an interactive lab that runs the actual trained weights in your browser. Follow a character through tokenization, embeddings, causal attention, and the next-token distribution. Change sampling settings, switch training checkpoints, or disable an attention head and investigate the effect.
 
-[Open the interactive lab](https://elliottbarnes.github.io/ellmiott-gpt/) · [Start the six lessons](docs/README.md) · [Model card](MODEL_CARD.md) · [Reproduce training](docs/training.md)
+[Open the interactive lab](https://elliottbarnes.github.io/ellmiott/) · [Start the six lessons](docs/README.md) · [Model card](MODEL_CARD.md) · [Reproduce training](docs/training.md)
 
 ## What is here
 
@@ -22,8 +22,8 @@ The checkpoint is a small character-level text-completion model trained on Tiny 
 Use Node.js 22 or newer. The site has no runtime packages to install.
 
 ```sh
-git clone https://github.com/elliottbarnes/ellmiott-gpt.git
-cd ellmiott-gpt
+git clone https://github.com/elliottbarnes/ellmiott.git
+cd ellmiott
 npm test
 npm run build
 npm run dev
@@ -80,4 +80,4 @@ See [architecture](docs/architecture.md) for the tensor layout and runtime agree
 
 Original project code, documentation, and generated checkpoints are provided under the [MIT license](LICENSE). The bundled Shakespeare text is separate third-party source material: the underlying works are public domain, and the Tiny Shakespeare compilation is attributed to Andrej Karpathy. See [data provenance](data/README.md) and [citations](CITATIONS.md); the project license does not relicense third-party material.
 
-The transformer architecture and GPT training objective build on established research. minGPT and nanoGPT are credited educational references. Ellmiott GPT's teaching interface, runnable experiments, explicit model implementation, and browser runtime form this project's implementation.
+The transformer architecture and GPT training objective build on established research. minGPT and nanoGPT are credited educational references. Ellmiott's teaching interface, runnable experiments, explicit model implementation, and browser runtime form this project's implementation.
